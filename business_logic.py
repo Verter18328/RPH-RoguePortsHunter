@@ -57,6 +57,14 @@ class RoguePortsHunter:
             return re.compile(rf"^{re.escape(token)}$")
         return re.compile(rf"^(?:\d+:)?{re.escape(token)}$")
 
+    @staticmethod
+    def _port_sort_key(port: str) -> tuple[int, int]:
+        """Zwraca klucz sortowania dla ``slot:port`` (rosnąco)."""
+        slot, separator, port_number = port.partition(":")
+        if separator:
+            return int(slot), int(port_number)
+        return 0, int(slot)
+
     def get_all_devices(self) -> list[IPv4Address]:
         """Zwraca listę hostów inventory; przy błędzie zwraca pustą listę."""
         try:
@@ -130,6 +138,16 @@ class RoguePortsHunter:
 
         if failed:
             print(f"Finished with errors on {failed} of {len(hosts)} hosts.")
+        output_data = [
+            OutputData(data.host, sorted(data.ports, key=self._port_sort_key))
+            for data in output_data
+        ]
+        output_data.sort(
+            key=lambda data: (
+                self._port_sort_key(data.ports[0]) if data.ports else (10**9, 10**9),
+                int(data.host),
+            )
+        )
         return output_data
 
     def export_results(

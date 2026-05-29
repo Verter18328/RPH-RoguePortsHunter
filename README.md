@@ -53,7 +53,7 @@ Operational messages (skipped rows, SSH errors) are printed to the **console** (
 | Workers | `WORKERS_COUNT = 20` in `business_logic.py` (tune if switches or bastion limit concurrent sessions) |
 | Sessions | One `SSHDataRetriever` (Netmiko connection) per host per worker thread; closed in `finally` |
 | Progress | After each host completes, `on_progress(done, total, host)` updates the bar (0–100%) |
-| Result order | Table and CSV list hosts in **completion order**, not necessarily inventory order |
+| Result order | Table and CSV are sorted by the lowest reported port (ascending); ties are ordered by host IP |
 | Errors | Auth failure, timeout, or parse error on one host does not stop the rest |
 
 ---
@@ -180,6 +180,7 @@ Host,Port
 ```
 
 One row per reported port on a given host.
+Rows are ordered by the lowest reported port across hosts (ascending), and ports within each host are also sorted ascending.
 
 ---
 
